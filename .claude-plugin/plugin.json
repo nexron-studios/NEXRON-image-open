@@ -2,5 +2,6 @@
   "name": "image-open",
   "version": "0.1.0",
   "description": "One button per pasted image above the prompt; a click opens it full size in the system viewer",
-  "types": "./types/index.d.ts"
+  "types": "./types/index.d.ts",
+  "license": "MIT"
 }

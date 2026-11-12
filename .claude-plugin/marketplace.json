@@ -1,6 +1,9 @@
 {
   "name": "claude-image-open",
-  "owner": { "name": "Jonas Glatz" },
+  "owner": {
+    "name": "NEXRON Studios",
+    "url": "https://github.com/nexron-studios"
+  },
   "plugins": [
     {
       "name": "image-open",
