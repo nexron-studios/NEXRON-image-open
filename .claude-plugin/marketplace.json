@@ -1,0 +1,11 @@
+{
+  "name": "claude-image-open",
+  "owner": { "name": "Jonas Glatz" },
+  "plugins": [
+    {
+      "name": "image-open",
+      "source": "./",
+      "description": "Real preview of pasted images above the prompt, plus a button that opens each one full size"
+    }
+  ]
+}
