@@ -1,0 +1,9 @@
+{
+  "name": "image-open",
+  "tagline": "See the images you paste into Claude Code, right above the prompt",
+  "glyph": "glyph.svg",
+  "brand": "#2DD4BF",
+  "brand_light": "#0D9488",
+  "pattern": "grid",
+  "out": "."
+}
