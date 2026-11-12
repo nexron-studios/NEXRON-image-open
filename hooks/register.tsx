@@ -2,6 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { PastedImage } from '../types'
+import { canDrawPictures, openInViewer, resolveTempRoot } from './platform'
 import { fitPreview, loadPreview } from './preview'
 
 // Pasting an image raises no prompt.edit (the tag appears only on the next keystroke),
@@ -15,17 +16,11 @@ let tempRoot: string | undefined
 let found: { sessionId: string; dir: string } | undefined
 let written: string | undefined
 let isChecking = false
+let isDrawingPictures = false
 
 const imageNumbers = (draft: string): number[] => [
   ...new Set([...draft.matchAll(IMAGE_TAG)].map(match => Number(match[1]))),
 ]
-
-// Claude Code keeps its temp files in <CLAUDE_CODE_TMPDIR or /tmp>/claude-<uid>.
-const resolveTempRoot = async ($: EngineInterface): Promise<string> => {
-  const base = (await $.env.get('CLAUDE_CODE_TMPDIR')) ?? '/tmp'
-  const uid = (await $.process.run(['id', '-u'])).stdout.trim()
-  return `${base.replace(/\/+$/, '')}/claude-${uid}`
-}
 
 // Pastes are cached as <tmp>/<project>/<session>/images/<n>.<ext>. The project folder is
 // named after a working directory that may have moved, so it is found by session id.
@@ -33,6 +28,7 @@ const findImagesDir = async ($: EngineInterface): Promise<string | undefined> =>
   const sessionId = await $.session.id()
   if (found?.sessionId === sessionId) return found.dir
   tempRoot ??= await resolveTempRoot($)
+  if (tempRoot === undefined) return undefined
   const entries = await $.fs.list(tempRoot).catch(() => [])
   for (const entry of entries) {
     const dir = `${tempRoot}/${entry.name}/${sessionId}/images`
@@ -52,7 +48,7 @@ const findImagePath = async ($: EngineInterface, dir: string | undefined, n: num
 
 const describeImage = async ($: EngineInterface, dir: string | undefined, n: number): Promise<PastedImage> => {
   const path = await findImagePath($, dir, n)
-  if (path === null || dir === undefined) return { n, path, previewPng: null, pixelSize: null }
+  if (path === null || dir === undefined || !isDrawingPictures) return { n, path, previewPng: null, pixelSize: null }
   const out = `${dir.replace(/\/images$/, '')}/image-open-${n}.png`
   return { n, path, ...(await loadPreview($, path, out)) }
 }
@@ -83,12 +79,13 @@ const openImage = async ($: EngineInterface, image: PastedImage) => {
     $.ui.toast(`Bild ${image.n} ist noch nicht gespeichert`)
     return
   }
-  const { exitCode, stderr } = await $.process.run(['open', image.path])
-  if (exitCode !== 0) $.ui.toast(`Bild ${image.n} ließ sich nicht öffnen: ${stderr.trim()}`)
+  const { isOpened, error } = await openInViewer($, image.path)
+  if (!isOpened) $.ui.toast(`Bild ${image.n} ließ sich nicht öffnen: ${error}`)
 }
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
+    isDrawingPictures = await canDrawPictures($)
     $.clock.every(POLL_MS, () => check($))
     return next(e)
   })

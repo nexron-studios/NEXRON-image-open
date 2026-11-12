@@ -5,7 +5,7 @@
   <img src="docs/brand/readme-banner-dark.svg" alt="image-open by NEXRON Studios: See the images you paste into Claude Code, right above the prompt" width="100%">
 </picture>
 <br><br>
-<img src="https://img.shields.io/badge/platform-macOS-2DD4BF?style=flat-square&labelColor=19191a&logo=apple&logoColor=f0efec" alt="Platform: macOS">
+<img src="https://img.shields.io/badge/platform-macOS_%7C_Windows-2DD4BF?style=flat-square&labelColor=19191a&logoColor=f0efec" alt="Platform: macOS and Windows">
 <img src="https://img.shields.io/badge/Claude_Code-mod-2DD4BF?style=flat-square&labelColor=19191a&logo=claude&logoColor=f0efec" alt="Claude Code mod">
 <img src="https://img.shields.io/badge/TypeScript-strict-2DD4BF?style=flat-square&labelColor=19191a&logo=typescript&logoColor=f0efec" alt="TypeScript strict">
 <img src="https://img.shields.io/badge/preview-kitty_graphics-2DD4BF?style=flat-square&labelColor=19191a&logo=ghostty&logoColor=f0efec" alt="Preview via kitty graphics">
@@ -19,7 +19,7 @@ image above the prompt and puts a button under it that opens the image full size
 | | |
 | --- | --- |
 | 🖼️ **Preview** | A sharp thumbnail of each pasted image above the prompt, before you send. |
-| 🔍 **Open full size** | One click on `Bild N öffnen` opens the image in the macOS Preview app. |
+| 🔍 **Open full size** | One click on `Bild N öffnen` opens the image in Preview on macOS or Photos on Windows. |
 | 🧩 **Works in herdr** | Real pictures inside the herdr multiplexer when it runs in Ghostty. |
 
 ## How it works
@@ -37,7 +37,8 @@ flowchart LR
 
 The mod polls the prompt draft for `[Image #N]` tags, finds each paste in Claude Code's
 session cache, downscales it once with `sips` and draws it with Claude Code's `Image`
-element. The button runs `open` on the original file.
+element. The button hands the original file to the system viewer. On Windows, PowerShell
+does both jobs (`System.Drawing` to downscale, `Start-Process` to open).
 
 ## Install
 
@@ -60,13 +61,18 @@ anyway. Add this to the `env` block of `~/.claude/settings.json` and start a new
 "env": { "CLAUDE_CODE_FORCE_TERMINAL_IMAGES": "1" }
 ```
 
-Do not set it in iTerm2 or Terminal.app: they cannot draw these pictures and show garbage
-instead. There the preview is left out and the button still opens the image.
+Do not set it in iTerm2, Terminal.app or Windows Terminal: they cannot draw these pictures
+and show garbage instead. Without the setting, the mod leaves the preview out in terminals
+it does not recognise, and the button still opens the image.
+
+On Windows there is no Ghostty, so expect the button without a preview. Whether WezTerm
+draws the pictures with the setting above is untested.
 
 ## Stack
 
 - TypeScript hooks module against the Claude Code mod API (`hooks/register.tsx`, `hooks/preview.ts`)
-- macOS `sips` for downscaling, `open` for the full-size view
+- macOS: `sips` to downscale, `open` for the full-size view
+- Windows: PowerShell with `System.Drawing` to downscale, `Start-Process` for the full-size view
 - Edit, then `claude plugin marketplace update claude-image-open` and
   `claude plugin update image-open@claude-image-open`, and start a new session
 
