@@ -1,6 +1,6 @@
 {
   "name": "image-open",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Real preview of pasted images above the prompt, plus a button that opens each one full size (macOS and Windows)",
   "types": "./types/index.d.ts",
   "license": "MIT"

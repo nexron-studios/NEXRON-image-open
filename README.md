@@ -37,7 +37,10 @@ flowchart LR
 
 The mod polls the prompt draft for `[Image #N]` tags, finds each paste in Claude Code's
 session cache, downscales it once with `sips` and draws it with Claude Code's `Image`
-element. The button hands the original file to the system viewer. On Windows, PowerShell
+element. Claude Code takes at most 2 MiB of picture data for the whole band, so the
+previews of one draft share that budget and get smaller the more images you paste. When
+a long draft leaves the band too few rows, the picture steps aside and the button row
+says so. The button hands the original file to the system viewer. On Windows, PowerShell
 does both jobs (`System.Drawing` to downscale, `Start-Process` to open).
 
 ## Install
